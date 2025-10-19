@@ -1,0 +1,21 @@
+{
+    "cluster": "blog-app-cluster",
+    "serviceName": "blog-app-service",
+    "taskDefinition": "blog-app-task:1",
+    "desiredCount": 1,
+    "launchType": "FARGATE",
+    "platformVersion": "LATEST",
+    "networkConfiguration": {
+        "awsvpcConfiguration": {
+            "subnets": [
+                "subnet-033170a1b3da3bb74",
+                "subnet-0c261a74cb02f83d0"
+            ],
+            "securityGroups": [
+                "sg-0359282c83d24bc2f"
+            ],
+            "assignPublicIp": "ENABLED"
+        }
+    }
+}
+
