@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Memory Chat Interface</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f7fa;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2em;
+        }
+        .header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+        }
+        .chat-container {
+            display: flex;
+            height: 600px;
+        }
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background-color: #fafbfc;
+        }
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+        }
+        .message.user {
+            justify-content: flex-end;
+        }
+        .message.assistant {
+            justify-content: flex-start;
+        }
+        .message-content {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            word-wrap: break-word;
+        }
+        .message.user .message-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .message.assistant .message-content {
+            background: white;
+            border: 1px solid #e1e5e9;
+            color: #333;
+        }
+        .message-time {
+            font-size: 0.8em;
+            opacity: 0.7;
+            margin-top: 5px;
+        }
+        .chat-input {
+            padding: 20px;
+            border-top: 1px solid #e1e5e9;
+            background: white;
+        }
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+        .input-group input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            font-size: 16px;
+            outline: none;
+        }
+        .input-group input:focus {
+            border-color: #667eea;
+        }
+        .input-group button {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .input-group button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .input-group button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .user-info {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .user-info input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            flex: 1;
+        }
+        .memory-panel {
+            width: 300px;
+            background: #f8f9fa;
+            border-left: 1px solid #e1e5e9;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .memory-section {
+            margin-bottom: 20px;
+        }
+        .memory-section h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+            font-size: 1.1em;
+        }
+        .memory-item {
+            background: white;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            border-left: 3px solid #667eea;
+            font-size: 0.9em;
+        }
+        .memory-item .label {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 4px;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+        .success {
+            background: #efe;
+            color: #363;
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+        .api-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .api-buttons button {
+            padding: 8px 16px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .api-buttons button:hover {
+            background: #218838;
+        }
+        .api-response {
+            background: #f8f9fa;
+            border: 1px solid #e1e5e9;
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 0.8em;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>AI Memory Chat System</h1>
+            <p>Chat with an AI that remembers your conversations using short-term, long-term, and episodic memory</p>
+        </div>
+        
+        <div class="user-info">
+            <input type="text" id="userId" placeholder="Enter User ID" value="user123">
+            <input type="text" id="sessionId" placeholder="Enter Session ID" value="session1">
+        </div>
+        
+        <div class="api-buttons">
+            <button onclick="getMemory()">Get Memory</button>
+            <button onclick="getAggregate()">Get Aggregate</button>
+            <button onclick="clearChat()">Clear Chat</button>
+        </div>
+        
+        <div class="chat-container">
+            <div class="chat-messages" id="chatMessages">
+                <div class="message assistant">
+                    <div class="message-content">
+                        Hello! I'm an AI assistant with memory capabilities. I can remember our conversations and learn about you over time. What would you like to talk about?
+                    </div>
+                </div>
+            </div>
+            
+            <div class="memory-panel">
+                <div class="memory-section">
+                    <h3>Memory Status</h3>
+                    <div id="memoryStatus">No memory data loaded</div>
+                </div>
+                
+                <div class="memory-section">
+                    <h3>API Responses</h3>
+                    <div id="apiResponses"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="chat-input">
+            <div class="input-group">
+                <input type="text" id="messageInput" placeholder="Type your message here..." onkeypress="handleKeyPress(event)">
+                <button onclick="sendMessage()" id="sendButton">Send</button>
+            </div>
+        </div>
+        
+        <div class="loading" id="loading">
+            <p>AI is thinking...</p>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000';
+        let messageCount = 0;
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        async function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value.trim();
+            
+            if (!message) return;
+            
+            const userId = document.getElementById('userId').value || 'user123';
+            const sessionId = document.getElementById('sessionId').value || 'session1';
+            
+            // Add user message to chat
+            addMessage('user', message);
+            messageInput.value = '';
+            
+            // Show loading
+            showLoading(true);
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/chat`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        user_id: userId,
+                        session_id: sessionId,
+                        message: message
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Add assistant response
+                    addMessage('assistant', data.reply);
+                    
+                    // Update memory status
+                    updateMemoryStatus(data.memory_used);
+                    
+                    messageCount++;
+                } else {
+                    showError('Failed to get response: ' + data.detail);
+                }
+            } catch (error) {
+                showError('Error: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function addMessage(role, content) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}`;
+            
+            const now = new Date();
+            const timeString = now.toLocaleTimeString();
+            
+            messageDiv.innerHTML = `
+                <div class="message-content">
+                    ${content}
+                    <div class="message-time">${timeString}</div>
+                </div>
+            `;
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function updateMemoryStatus(memoryUsed) {
+            const memoryStatus = document.getElementById('memoryStatus');
+            memoryStatus.innerHTML = `
+                <div class="memory-item">
+                    <div class="label">Short-term Messages:</div>
+                    ${memoryUsed.short_term_count}
+                </div>
+                <div class="memory-item">
+                    <div class="label">Session Summary:</div>
+                    ${memoryUsed.session_summary ? memoryUsed.session_summary.substring(0, 100) + '...' : 'None'}
+                </div>
+                <div class="memory-item">
+                    <div class="label">Lifetime Summary:</div>
+                    ${memoryUsed.lifetime_summary ? memoryUsed.lifetime_summary.substring(0, 100) + '...' : 'None'}
+                </div>
+                <div class="memory-item">
+                    <div class="label">Episodic Facts:</div>
+                    ${memoryUsed.episodic_facts.length} facts retrieved
+                </div>
+            `;
+        }
+
+        async function getMemory() {
+            const userId = document.getElementById('userId').value || 'user123';
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/memory/${userId}`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showApiResponse('Memory Data', data);
+                } else {
+                    showError('Failed to get memory: ' + data.detail);
+                }
+            } catch (error) {
+                showError('Error: ' + error.message);
+            }
+        }
+
+        async function getAggregate() {
+            const userId = document.getElementById('userId').value || 'user123';
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/aggregate/${userId}`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showApiResponse('Aggregate Data', data);
+                } else {
+                    showError('Failed to get aggregate: ' + data.detail);
+                }
+            } catch (error) {
+                showError('Error: ' + error.message);
+            }
+        }
+
+        function showApiResponse(title, data) {
+            const apiResponses = document.getElementById('apiResponses');
+            const responseDiv = document.createElement('div');
+            responseDiv.innerHTML = `
+                <div class="memory-item">
+                    <div class="label">${title}:</div>
+                    <div class="api-response">${JSON.stringify(data, null, 2)}</div>
+                </div>
+            `;
+            apiResponses.appendChild(responseDiv);
+        }
+
+        function showError(message) {
+            const chatMessages = document.getElementById('chatMessages');
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error';
+            errorDiv.textContent = message;
+            chatMessages.appendChild(errorDiv);
+        }
+
+        function showLoading(show) {
+            const loading = document.getElementById('loading');
+            const sendButton = document.getElementById('sendButton');
+            
+            loading.style.display = show ? 'block' : 'none';
+            sendButton.disabled = show;
+        }
+
+        function clearChat() {
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.innerHTML = `
+                <div class="message assistant">
+                    <div class="message-content">
+                        Hello! I'm an AI assistant with memory capabilities. I can remember our conversations and learn about you over time. What would you like to talk about?
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('memoryStatus').innerHTML = 'No memory data loaded';
+            document.getElementById('apiResponses').innerHTML = '';
+            messageCount = 0;
+        }
+
+        // Initialize
+        document.getElementById('messageInput').focus();
+    </script>
+</body>
+</html>

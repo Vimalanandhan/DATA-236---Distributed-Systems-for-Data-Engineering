@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Management API Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .delete-btn {
+            background-color: #dc3545;
+        }
+        .delete-btn:hover {
+            background-color: #c82333;
+        }
+        .task-item {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+        .task-title {
+            font-weight: bold;
+            color: #333;
+        }
+        .task-meta {
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+        .status-pending { color: #ffc107; }
+        .status-in-progress { color: #17a2b8; }
+        .status-completed { color: #28a745; }
+        .priority-low { color: #6c757d; }
+        .priority-medium { color: #fd7e14; }
+        .priority-high { color: #dc3545; }
+        .response {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+        .error {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        .success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Task Management API Test Interface</h1>
+        <p>This interface allows you to test all CRUD operations for the Task Management API.</p>
+    </div>
+
+    <div class="container">
+        <h2>Create New Task</h2>
+        <form id="taskForm">
+            <div class="form-group">
+                <label for="title">Title *</label>
+                <input type="text" id="title" name="title" required maxlength="100">
+            </div>
+            <div class="form-group">
+                <label for="description">Description</label>
+                <textarea id="description" name="description" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="status">Status</label>
+                <select id="status" name="status">
+                    <option value="pending">Pending</option>
+                    <option value="in-progress">In Progress</option>
+                    <option value="completed">Completed</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="priority">Priority</label>
+                <select id="priority" name="priority">
+                    <option value="low">Low</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="high">High</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="dueDate">Due Date *</label>
+                <input type="date" id="dueDate" name="dueDate" required>
+            </div>
+            <div class="form-group">
+                <label for="category">Category *</label>
+                <select id="category" name="category" required>
+                    <option value="">Select Category</option>
+                    <option value="Work">Work</option>
+                    <option value="Personal">Personal</option>
+                    <option value="Shopping">Shopping</option>
+                    <option value="Health">Health</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            <button type="submit">Create Task</button>
+        </form>
+        <div id="createResponse" class="response" style="display: none;"></div>
+    </div>
+
+    <div class="container">
+        <h2>All Tasks</h2>
+        <button onclick="loadTasks()">Refresh Tasks</button>
+        <div id="tasksList"></div>
+        <div id="tasksResponse" class="response" style="display: none;"></div>
+    </div>
+
+    <div class="container">
+        <h2>Get Single Task</h2>
+        <div class="form-group">
+            <label for="taskId">Task ID</label>
+            <input type="text" id="taskId" placeholder="Enter task ID">
+        </div>
+        <button onclick="getSingleTask()">Get Task</button>
+        <div id="singleTaskResponse" class="response" style="display: none;"></div>
+    </div>
+
+    <div class="container">
+        <h2>Update Task</h2>
+        <div class="form-group">
+            <label for="updateTaskId">Task ID</label>
+            <input type="text" id="updateTaskId" placeholder="Enter task ID">
+        </div>
+        <div class="form-group">
+            <label for="updateStatus">New Status</label>
+            <select id="updateStatus">
+                <option value="pending">Pending</option>
+                <option value="in-progress">In Progress</option>
+                <option value="completed">Completed</option>
+            </select>
+        </div>
+        <button onclick="updateTask()">Update Task</button>
+        <div id="updateResponse" class="response" style="display: none;"></div>
+    </div>
+
+    <div class="container">
+        <h2>Delete Task</h2>
+        <div class="form-group">
+            <label for="deleteTaskId">Task ID</label>
+            <input type="text" id="deleteTaskId" placeholder="Enter task ID">
+        </div>
+        <button onclick="deleteTask()" class="delete-btn">Delete Task</button>
+        <div id="deleteResponse" class="response" style="display: none;"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000/api/tasks';
+
+        function showResponse(elementId, data, isError = false) {
+            const element = document.getElementById(elementId);
+            element.style.display = 'block';
+            element.textContent = JSON.stringify(data, null, 2);
+            element.className = `response ${isError ? 'error' : 'success'}`;
+        }
+
+        function hideResponse(elementId) {
+            document.getElementById(elementId).style.display = 'none';
+        }
+
+        // Create Task
+        document.getElementById('taskForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            hideResponse('createResponse');
+            
+            const formData = new FormData(e.target);
+            const taskData = {
+                title: formData.get('title'),
+                description: formData.get('description'),
+                status: formData.get('status'),
+                priority: formData.get('priority'),
+                dueDate: formData.get('dueDate'),
+                category: formData.get('category')
+            };
+
+            try {
+                const response = await fetch(API_BASE, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(taskData)
+                });
+                
+                const data = await response.json();
+                showResponse('createResponse', data, !response.ok);
+                
+                if (response.ok) {
+                    e.target.reset();
+                    loadTasks();
+                }
+            } catch (error) {
+                showResponse('createResponse', { error: error.message }, true);
+            }
+        });
+
+        // Load All Tasks
+        async function loadTasks() {
+            hideResponse('tasksResponse');
+            try {
+                const response = await fetch(API_BASE);
+                const data = await response.json();
+                
+                showResponse('tasksResponse', data, !response.ok);
+                
+                if (response.ok) {
+                    displayTasks(data);
+                }
+            } catch (error) {
+                showResponse('tasksResponse', { error: error.message }, true);
+            }
+        }
+
+        function displayTasks(tasks) {
+            const container = document.getElementById('tasksList');
+            if (tasks.length === 0) {
+                container.innerHTML = '<p>No tasks found.</p>';
+                return;
+            }
+
+            container.innerHTML = tasks.map(task => `
+                <div class="task-item">
+                    <div class="task-title">${task.title}</div>
+                    <div class="task-meta">
+                        <span class="status-${task.status}">Status: ${task.status}</span> | 
+                        <span class="priority-${task.priority}">Priority: ${task.priority}</span> | 
+                        Category: ${task.category} | 
+                        Due: ${new Date(task.dueDate).toLocaleDateString()}
+                        ${task.description ? `<br>Description: ${task.description}` : ''}
+                        <br><small>ID: ${task._id}</small>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Get Single Task
+        async function getSingleTask() {
+            const taskId = document.getElementById('taskId').value;
+            if (!taskId) {
+                alert('Please enter a task ID');
+                return;
+            }
+
+            hideResponse('singleTaskResponse');
+            try {
+                const response = await fetch(`${API_BASE}/${taskId}`);
+                const data = await response.json();
+                showResponse('singleTaskResponse', data, !response.ok);
+            } catch (error) {
+                showResponse('singleTaskResponse', { error: error.message }, true);
+            }
+        }
+
+        // Update Task
+        async function updateTask() {
+            const taskId = document.getElementById('updateTaskId').value;
+            const newStatus = document.getElementById('updateStatus').value;
+            
+            if (!taskId) {
+                alert('Please enter a task ID');
+                return;
+            }
+
+            hideResponse('updateResponse');
+            try {
+                const response = await fetch(`${API_BASE}/${taskId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ status: newStatus })
+                });
+                
+                const data = await response.json();
+                showResponse('updateResponse', data, !response.ok);
+                
+                if (response.ok) {
+                    loadTasks();
+                }
+            } catch (error) {
+                showResponse('updateResponse', { error: error.message }, true);
+            }
+        }
+
+        // Delete Task
+        async function deleteTask() {
+            const taskId = document.getElementById('deleteTaskId').value;
+            if (!taskId) {
+                alert('Please enter a task ID');
+                return;
+            }
+
+            if (!confirm('Are you sure you want to delete this task?')) {
+                return;
+            }
+
+            hideResponse('deleteResponse');
+            try {
+                const response = await fetch(`${API_BASE}/${taskId}`, {
+                    method: 'DELETE'
+                });
+                
+                const data = await response.json();
+                showResponse('deleteResponse', data, !response.ok);
+                
+                if (response.ok) {
+                    loadTasks();
+                }
+            } catch (error) {
+                showResponse('deleteResponse', { error: error.message }, true);
+            }
+        }
+
+        // Load tasks on page load
+        window.onload = loadTasks;
+    </script>
+</body>
+</html>
