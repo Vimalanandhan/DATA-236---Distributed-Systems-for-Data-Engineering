@@ -5,6 +5,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const Task = require('./models/Task');
+const authRoutes = require('./routes/authRoutes');
 
 dotenv.config();
 
@@ -14,6 +15,9 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
+
+// Routes
+app.use('/api/auth', authRoutes);
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/taskmanager', {

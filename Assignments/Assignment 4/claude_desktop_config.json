@@ -1,9 +1,0 @@
-{
-  "mcpServers": {
-    "meals": {
-      "command": "python3.10",
-      "args": ["/Users/spartan/Documents/236/meals_server_mcp.py"],
-      "env": {}
-    }
-  }
-}
